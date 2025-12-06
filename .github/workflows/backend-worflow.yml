@@ -23,7 +23,7 @@ jobs:
       # ----------------- DEPENDENCIAS Y BUILD -----------------
       - name: 📦 Instalar dependencias backend
         run: |
-          cd Back-End-ecobahia
+          cd Back-End-ecobahia/sistema-backend
           npm install
 
       - name: 🏗 Compilar Backend (Build)
@@ -38,11 +38,11 @@ jobs:
           mkdir deploy-backend
           
           # Copiamos package.json desde la carpeta correcta
-          cp Back-End-ecobahia/package*.json deploy-backend/
+          cp Back-End-ecobahia/sistema-backend/package*.json deploy-backend/
           
           # ⚠️ Ajuste importante: Copiar la carpeta compilada o el código fuente
           # Si usas TypeScript y compilas a 'dist':
-          cp -r Back-End-ecobahia/dist deploy-backend/ || cp -r Back-End-ecobahia/src deploy-backend/
+          cp -r Back-End-ecobahia/sistema-backend/dist deploy-backend/ || cp -r Back-End-ecobahia/sistema-backend/src deploy-backend/
           
           # Si tienes archivos raíz necesarios (como index.js o app.js en la raíz del backend), agrégalos:
           # cp Back-End-ecobahia/index.js deploy-backend/ 2>/dev/null || :
