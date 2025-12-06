@@ -1,6 +1,5 @@
-// Estructura de la tabla 'usuario' utilizando Sequelize
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db.config');
+const { sequelize } = require('../config/db.config'); // <-- asegúrate de que la ruta es correcta
 
 const Usuario = sequelize.define('usuario', {
   id_usuario: {
@@ -16,14 +15,6 @@ const Usuario = sequelize.define('usuario', {
   password_hash: {
     type: DataTypes.STRING(255),
     allowNull: false
-  },
-  id_rol: {
-    type: DataTypes.INTEGER,
-    allowNull: true,     // puede ser null al inicio
-    references: {
-      model: 'rol',
-      key: 'id_rol'
-    }
   },
   fecha_creacion: {
     type: DataTypes.DATE,

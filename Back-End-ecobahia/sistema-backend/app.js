@@ -1,68 +1,31 @@
 require('dotenv').config();
 
 const express = require('express');
-const cors = require('cors'); // <--- Importa cors
-const app = express();
-const PORT = process.env.PORT || 3000;
+const cors = require('cors');
 
-// Middleware para CORS
+const app = express();
+
+// Middlewares
 app.use(cors({
-    origin: 'http://localhost:4200', // URL de tu frontend Angular
+    origin: 'http://localhost:4200',
     credentials: true
 }));
 
-// Middleware para procesar JSON
 app.use(express.json());
 
-// Importar configuración de base de datos
-const { sequelize, testConnection } = require('./config/db.config');
-const db = require('./maquetas');
+// Importar rutas
+app.use('/api/rutas', require('./routes/ruta.routes'));
+app.use('/api/usuarios', require('./routes/usuario.routes'));
+app.use('/api/calles', require('./routes/calles.routes'));
+app.use('/api/vehiculos', require('./routes/vehiculos.routes'));
+app.use('/api/recorridos', require('./routes/recorridos.routes'));
 
-// Importar rutas de la API
-const rutasRoutes = require('./routes/ruta.routes');
-const usuarioRoutes = require('./routes/usuario.routes');
-const callesRoutes = require('./routes/calles.routes');
-const vehiculosRoutes = require('./routes/vehiculos.routes');
-const recorridosRoutes = require('./routes/recorridos.routes');
-
-// Registrar rutas
-app.use('/api/rutas', rutasRoutes);
-app.use('/api/usuarios', usuarioRoutes);
-app.use('/api/calles', callesRoutes);
-app.use('/api/vehiculos', vehiculosRoutes);
-app.use('/api/recorridos', recorridosRoutes);
-
-// Endpoint de bienvenida
+// Endpoint raíz
 app.get('/', (req, res) => {
     res.json({
         message: 'Bienvenido al Servidor Express EcoBahía',
-        version: '1.0.0',
-        endpoints: {
-            rutas: '/api/rutas',
-            barrios: '/api/barrios',
-            posiciones: '/api/posiciones',
-            usuarios: '/api/usuarios',
-            calles: '/api/calles'
-        }
+        version: '1.0.0'
     });
 });
 
-// Función para iniciar el servidor
-async function iniciarServidor() {
-    try {
-        await testConnection();
-
-        if (process.env.NODE_ENV !== 'production') {
-            console.log('✅ Modelos sincronizados con la base de datos');
-        }
-
-        app.listen(PORT, () => {
-            console.log(`🚀 Servidor escuchando en http://localhost:${PORT}`);
-        });
-    } catch (error) {
-        console.error('❌ Error al iniciar el servidor:', error);
-        process.exit(1);
-    }
-}
-
-iniciarServidor();
+module.exports = app;

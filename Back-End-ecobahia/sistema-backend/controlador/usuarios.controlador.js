@@ -2,8 +2,6 @@ const Usuario = require('../maquetas/usuarios.maqueta');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const ROL_POR_DEFECTO = 2; // Cambia según el rol que tengas en tu tabla de roles
-
 // Registrar usuario
 exports.registrarUsuario = async (req, res) => {
   try {
@@ -21,11 +19,10 @@ exports.registrarUsuario = async (req, res) => {
     // Crear hash de la contraseña
     const hash = await bcrypt.hash(password, 10);
 
-    // Crear usuario con rol por defecto
+    // Crear usuario (sin id_rol)
     const nuevoUsuario = await Usuario.create({
       email,
-      password_hash: hash,
-      id_rol: ROL_POR_DEFECTO
+      password_hash: hash
     });
 
     res.status(201).json({
@@ -33,8 +30,7 @@ exports.registrarUsuario = async (req, res) => {
       usuario: {
         id_usuario: nuevoUsuario.id_usuario,
         email: nuevoUsuario.email,
-        id_rol: nuevoUsuario.id_rol,
-        fecha_creacion: nuevoUsuario.fecha_creacion
+        fecha_creacion: nuevoUsuario.fecha_creacion // si existe
       }
     });
   } catch (error) {
@@ -58,7 +54,7 @@ exports.logearUsuario = async (req, res) => {
     if (!valido) return res.status(401).json({ error: 'Credenciales inválidas' });
 
     const token = jwt.sign(
-      { id: usuario.id_usuario, rol: usuario.id_rol },
+      { id: usuario.id_usuario }, // sin rol
       process.env.JWT_SECRET || '12345fallback',
       { expiresIn: '2h' }
     );
@@ -68,8 +64,7 @@ exports.logearUsuario = async (req, res) => {
       token,
       usuario: {
         id_usuario: usuario.id_usuario,
-        email: usuario.email,
-        id_rol: usuario.id_rol
+        email: usuario.email
       }
     });
   } catch (error) {
