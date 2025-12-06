@@ -28,7 +28,7 @@ jobs:
 
       - name: 🏗 Compilar Backend (Build)
         run: |
-          cd Back-End-ecobahia
+          cd Back-End-ecobahia/sistema-backend
           npm run build --if-present 
 
       # ----------------- PREPARAR ARCHIVOS -----------------
@@ -45,7 +45,7 @@ jobs:
           cp -r Back-End-ecobahia/sistema-backend/dist deploy-backend/ || cp -r Back-End-ecobahia/sistema-backend/src deploy-backend/
           
           # Si tienes archivos raíz necesarios (como index.js o app.js en la raíz del backend), agrégalos:
-          # cp Back-End-ecobahia/index.js deploy-backend/ 2>/dev/null || :
+          cp Back-End-ecobahia/sistema-backend/app.js deploy-backend/ 2>/dev/null || :
 
       - name: 🧾 Ver contenido a subir
         run: ls -R deploy-backend
