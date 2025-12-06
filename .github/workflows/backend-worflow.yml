@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'Back-End-ecobahia/**' # 👈 Solo se activa con cambios en el backend
 
 jobs:
   deploy-backend:
