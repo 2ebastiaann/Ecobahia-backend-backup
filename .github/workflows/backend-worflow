@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'backend/**' # Solo se ejecuta si hay cambios en el backend
+      - 'Back-End-ecobahia/**' # 👈 Solo se activa si hay cambios en esta carpeta
 
 jobs:
   deploy-backend:
@@ -25,14 +25,12 @@ jobs:
       # ----------------- DEPENDENCIAS Y BUILD -----------------
       - name: 📦 Instalar dependencias backend
         run: |
-          cd backend
+          cd Back-End-ecobahia
           npm install
 
-      # Si usas TypeScript o necesitas un paso de compilación (babel/tsc)
-      # Si es JS puro, puedes saltar este paso o dejarlo como validación
       - name: 🏗 Compilar Backend (Build)
         run: |
-          cd backend
+          cd Back-End-ecobahia
           npm run build --if-present 
 
       # ----------------- PREPARAR ARCHIVOS -----------------
@@ -41,23 +39,20 @@ jobs:
           rm -rf deploy-backend
           mkdir deploy-backend
           
-          # Copiamos el package.json y package-lock.json (CRUCIAL para backend)
-          cp backend/package*.json deploy-backend/
+          # Copiamos package.json desde la carpeta correcta
+          cp Back-End-ecobahia/package*.json deploy-backend/
           
-          # Si tienes build (dist), copia la carpeta dist. 
-          # Si es JS puro sin build, copia la carpeta 'src' o los archivos .js
-          # Ajusta esta línea según tu estructura:
-          cp -r backend/dist deploy-backend/ || cp -r backend/src deploy-backend/
+          # ⚠️ Ajuste importante: Copiar la carpeta compilada o el código fuente
+          # Si usas TypeScript y compilas a 'dist':
+          cp -r Back-End-ecobahia/dist deploy-backend/ || cp -r Back-End-ecobahia/src deploy-backend/
           
-          # Copiar archivo .env de ejemplo si es necesario (nunca el real)
-          # cp backend/.env.example deploy-backend/
+          # Si tienes archivos raíz necesarios (como index.js o app.js en la raíz del backend), agrégalos:
+          # cp Back-End-ecobahia/index.js deploy-backend/ 2>/dev/null || :
 
       - name: 🧾 Ver contenido a subir
         run: ls -R deploy-backend
 
       # ----------------- LIMPIAR SERVIDOR -----------------
-      # Nota: En backend a veces preferimos NO borrar node_modules para ahorrar tiempo
-      # Pero mantengo tu lógica de "limpieza total" aquí.
       - name: 🧹 Limpiar carpeta backend en servidor
         uses: appleboy/ssh-action@v1
         with:
@@ -66,8 +61,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT || '22' }}
           script: |
-            # Borramos código viejo pero intentamos preservar node_modules si quieres velocidad
-            # Aquí borramos todo para seguir tu estilo clean:
+            # Borra la versión anterior
             rm -rf /var/www/jorge_api/*
             mkdir -p /var/www/jorge_api
             echo "✔ Carpeta del servidor backend limpia"
@@ -96,16 +90,15 @@ jobs:
           script: |
             cd /var/www/jorge_api
             
-            # 1. Instalar dependencias de producción en el servidor
             echo "📦 Instalando dependencias en servidor..."
             npm install --production
 
-            # 2. Permisos (opcional pero recomendado)
+            # Permisos
             chmod -R 755 /var/www/jorge_api
 
-            # 3. Reiniciar el proceso con PM2
-            # Asumiendo que usas PM2 para mantener el backend vivo
+            # Reinicio con PM2
             echo "🔄 Reiniciando servicio..."
+            # Asegúrate que el archivo de entrada coincida (ej. dist/index.js, src/index.js, o index.js)
             pm2 restart eco-backend || pm2 start dist/index.js --name "eco-backend"
             
             echo "✔ Deploy Backend completado correctamente"
