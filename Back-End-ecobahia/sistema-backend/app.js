@@ -7,7 +7,10 @@ const app = express();
 
 // Middlewares
 app.use(cors({
-    origin: 'http://localhost:4200',
+    origin: [
+        'http://localhost:4200',
+        'http://ecobahia.eleueleo.com'
+    ],
     credentials: true
 }));
 
