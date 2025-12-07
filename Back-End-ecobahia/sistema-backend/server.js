@@ -3,14 +3,17 @@ const app = require('./app');
 
 const PORT = process.env.PORT || 3007;
 
-// Arranque del backend sin túnel SSH ni PostgreSQL local
+// ===============================
+// 🚀 INICIAR BACKEND CON SUPABASE
+// ===============================
 (async () => {
     try {
         console.log('🚀 Iniciando backend con Supabase...');
 
-        app.listen(PORT, () => {
-            console.log(`🟢 Servidor corriendo en http://localhost:${PORT}`);
-            console.log(`🌐 API lista en http://localhost:${PORT}/`);
+        // ATENCIÓN: 0.0.0.0 permite recibir tráfico externo
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`🟢 Servidor corriendo en http://0.0.0.0:${PORT}`);
+            console.log(`🌐 API lista externamente en :${PORT}`);
         });
 
     } catch (err) {
