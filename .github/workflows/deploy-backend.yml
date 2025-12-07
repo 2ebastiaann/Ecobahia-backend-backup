@@ -28,11 +28,9 @@ jobs:
         run: |
           rm -rf deploy-backend
           mkdir deploy-backend
-          
-          cp Back-End-ecobahia/sistema-backend/package*.json deploy-backend/
-          cp Back-End-ecobahia/sistema-backend/*.js deploy-backend/ 2>/dev/null || :
-          cp -r Back-End-ecobahia/sistema-backend/src deploy-backend/ 2>/dev/null || :
-          cp -r Back-End-ecobahia/sistema-backend/dist deploy-backend/ 2>/dev/null || :
+
+          # 🔥 COPIAR TODO el backend completo (solución al error)
+          cp -r Back-End-ecobahia/sistema-backend/* deploy-backend/
 
       - name: 🧹 Limpiar carpeta en servidor
         uses: appleboy/ssh-action@v1
