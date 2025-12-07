@@ -42,7 +42,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT || '22' }}
           script: |
-            TARGET="/var/www/ecobahia_backend"
+            TARGET="/var/www/jorge_site/backend"
             mkdir -p $TARGET
             find $TARGET -maxdepth 1 -mindepth 1 -not -name 'node_modules' -delete
             echo "✔ Carpeta $TARGET limpia y lista"
@@ -55,7 +55,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT || '22' }}
           source: "deploy-backend/*"
-          target: "/var/www/ecobahia_backend/"
+          target: "/var/www/jorge_site/backend/"
           strip_components: 1
           overwrite: true
 
@@ -67,9 +67,9 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT || '22' }}
           script: |
-            cd /var/www/ecobahia_backend
+            cd /var/www/jorge_site/backend
             npm install --production
             chmod -R 755 .
             pm2 restart eco-api || pm2 start index.js --name "eco-api"
             pm2 save
-            echo "✔ Deploy Backend finalizado en /var/www/ecobahia_backend"
+            echo "✔ Deploy Backend finalizado en /var/www/jorge_site/backend"
