@@ -42,7 +42,7 @@ jobs:
           script: |
             TARGET="/var/www/jorge_site/backend"
             mkdir -p $TARGET
-            find $TARGET -maxdepth 1 -mindepth 1 -not -name 'node_modules' -delete
+            find $TARGET -maxdepth 1 -mindepth 1 -not -name 'node_modules' -not -name '.env' -delete
             echo "✔ Carpeta $TARGET limpia y lista"
 
       - name: 📤 Subir backend al servidor
