@@ -84,7 +84,7 @@ jobs:
           port: ${{ secrets.SERVER_PORT || '22' }}
           script: |
             cd /var/www/ecobahia_backend
-            
+              
             echo "📦 Instalando dependencias de producción..."
             npm install --production
 
