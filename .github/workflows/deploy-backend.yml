@@ -10,43 +10,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ----------------- CHECKOUT -----------------
       - name: 🧩 Checkout código
         uses: actions/checkout@v4
 
-      # ----------------- NODE SETUP -----------------
       - name: ⚙ Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # ----------------- INSTALAR Y COMPILAR LOCALMENTE -----------------
       - name: 📦 Instalar dependencias y Build
         run: |
           cd Back-End-ecobahia/sistema-backend
           npm install
-          # Si tienes script de build (ej. tsc), esto lo ejecuta. Si no, no pasa nada.
-          npm run build --if-present 
+          npm run build --if-present
 
-      # ----------------- PREPARAR ARCHIVOS -----------------
       - name: 🧩 Preparar carpeta de despliegue
         run: |
           rm -rf deploy-backend
           mkdir deploy-backend
           
-          # 1. Copiamos package.json y lock
           cp Back-End-ecobahia/sistema-backend/package*.json deploy-backend/
-          
-          # 2. Copiamos archivos .js del backend
           cp Back-End-ecobahia/sistema-backend/*.js deploy-backend/ 2>/dev/null || :
-          
-          # 3. Copiar carpeta src si existe
           cp -r Back-End-ecobahia/sistema-backend/src deploy-backend/ 2>/dev/null || :
-          
-          # 4. Copiar carpeta dist si existiera
           cp -r Back-End-ecobahia/sistema-backend/dist deploy-backend/ 2>/dev/null || :
 
-      # ----------------- LIMPIAR SERVIDOR -----------------
       - name: 🧹 Limpiar carpeta en servidor
         uses: appleboy/ssh-action@v1
         with:
@@ -56,12 +43,10 @@ jobs:
           port: ${{ secrets.SERVER_PORT || '22' }}
           script: |
             TARGET="/var/www/ecobahia_backend"
-            
             mkdir -p $TARGET
             find $TARGET -maxdepth 1 -mindepth 1 -not -name 'node_modules' -delete
             echo "✔ Carpeta $TARGET limpia y lista"
 
-      # ----------------- SUBIR ARCHIVOS -----------------
       - name: 📤 Subir backend al servidor
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -74,7 +59,6 @@ jobs:
           strip_components: 1
           overwrite: true
 
-      # ----------------- CONFIG FINAL Y REINICIO -----------------
       - name: ⚙ Instalar dependencias y Reiniciar (PM2)
         uses: appleboy/ssh-action@v1
         with:
@@ -84,14 +68,8 @@ jobs:
           port: ${{ secrets.SERVER_PORT || '22' }}
           script: |
             cd /var/www/ecobahia_backend
-              
-            echo "📦 Instalando dependencias de producción..."
             npm install --production
-
             chmod -R 755 .
-
-            echo "🔄 Reiniciando servidor con PM2..."
             pm2 restart eco-api || pm2 start index.js --name "eco-api"
             pm2 save
-
             echo "✔ Deploy Backend finalizado en /var/www/ecobahia_backend"
