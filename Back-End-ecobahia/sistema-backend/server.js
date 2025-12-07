@@ -1,23 +1,15 @@
 require('dotenv').config();
+const app = require('./app');
 
-const app = require('./app');            // Tu aplicación Express ya configurada
-const connectToPgSSH = require('./ssh-tunel');
-const { testConnection } = require('./config/db.config');
+const PORT = process.env.PORT || 3007;
 
-const PORT = process.env.PORT || 3000;
-
-// Arranque del backend
+// Arranque del backend sin túnel SSH ni PostgreSQL local
 (async () => {
     try {
-        console.log('🔐 Estableciendo túnel SSH...');
-        await connectToPgSSH();
-        console.log('🟢 Túnel SSH activo');
-
-        console.log('🔄 Probando conexión a PostgreSQL...');
-        await testConnection();
+        console.log('🚀 Iniciando backend con Supabase...');
 
         app.listen(PORT, () => {
-            console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+            console.log(`🟢 Servidor corriendo en http://localhost:${PORT}`);
             console.log(`🌐 API lista en http://localhost:${PORT}/`);
         });
 
