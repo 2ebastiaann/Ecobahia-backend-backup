@@ -1,0 +1,109 @@
+name: 🚀 Deploy Backend ecoBahia (VPS)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ----------------- CHECKOUT -----------------
+      - name: 🧩 Checkout código
+        uses: actions/checkout@v4
+
+      # ----------------- NODE SETUP -----------------
+      - name: ⚙ Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # ----------------- INSTALAR Y COMPILAR LOCALMENTE -----------------
+      - name: 📦 Instalar dependencias y Build
+        run: |
+          cd Back-End-ecobahia
+          npm install
+          # Si tienes script de build (ej. tsc), esto lo ejecuta. Si no, no pasa nada.
+          npm run build --if-present 
+
+      # ----------------- PREPARAR ARCHIVOS -----------------
+      - name: 🧩 Preparar carpeta de despliegue
+        run: |
+          rm -rf deploy-backend
+          mkdir deploy-backend
+          
+          # 1. Copiamos package.json y lock (CRUCIAL para backend)
+          cp Back-End-ecobahia/package*.json deploy-backend/
+          
+          # 2. Copiamos el código. 
+          # OPCIÓN A: Si usas TypeScript y tienes carpeta 'dist':
+          cp -r Back-End-ecobahia/dist deploy-backend/ 2>/dev/null || :
+          
+          # OPCIÓN B: Si es JS puro, copiamos src o archivos raíz.
+          # (Esta línea copia todo lo que termine en .js de la raíz del backend por si acaso)
+          cp Back-End-ecobahia/*.js deploy-backend/ 2>/dev/null || :
+          
+          # OPCIÓN C: Copiar carpeta src si existe
+          cp -r Back-End-ecobahia/src deploy-backend/ 2>/dev/null || :
+
+      # ----------------- LIMPIAR SERVIDOR -----------------
+      - name: 🧹 Limpiar carpeta en servidor
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || '22' }}
+          script: |
+            # Mantenemos la ruta /var/www/ como pediste
+            TARGET="/var/www/ecobahia_backend"
+            
+            # Borramos contenido previo excepto node_modules (para ahorrar tiempo de instalación)
+            # Si no existe la carpeta, no da error
+            mkdir -p $TARGET
+            find $TARGET -maxdepth 1 -mindepth 1 -not -name 'node_modules' -delete
+            echo "✔ Carpeta $TARGET limpia y lista"
+
+      # ----------------- SUBIR ARCHIVOS -----------------
+      - name: 📤 Subir backend al servidor
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || '22' }}
+          source: "deploy-backend/*"
+          target: "/var/www/ecobahia_backend/" # 👈 Tu ruta solicitada
+          strip_components: 1
+          overwrite: true
+
+      # ----------------- CONFIG FINAL Y REINICIO -----------------
+      - name: ⚙ Instalar dependencias y Reiniciar (PM2)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || '22' }}
+          script: |
+            cd /var/www/ecobahia_backend
+            
+            echo "📦 Instalando dependencias de producción..."
+            npm install --production
+
+            # Ajustar permisos si es necesario
+            chmod -R 755 .
+
+            echo "🔄 Reiniciando servidor con PM2..."
+            # Asumiendo que usas PM2 en tu VPS Hostinger
+            # 'eco-api' es el nombre que le daremos al proceso en PM2
+            
+            # Intenta reiniciar, si falla (porque no existe), lo inicia
+            pm2 restart eco-api || pm2 start index.js --name "eco-api"
+            
+            # Guarda la configuración para que arranque si se reinicia el VPS
+            pm2 save
+            
+            echo "✔ Deploy Backend finalizado en /var/www/ecobahia_backend"

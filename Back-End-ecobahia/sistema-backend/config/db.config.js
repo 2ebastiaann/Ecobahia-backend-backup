@@ -7,8 +7,8 @@ const PASSWORD = process.env.DB_PASSWORD || 'Jack#_45279*2724';
 const DB = process.env.DB_NAME || 'db_app_EcoBahia';
 
 // NOTA: Usamos localhost y el puerto del túnel SSH
-const HOST = '127.0.0.1'; // Siempre localhost para el túnel
-const PORT_DB = 5433;     // Puerto local donde se abre el túnel SSH
+const HOST = 'localhost'; // Siempre localhost para el túnel
+const PORT_DB = 5432;     // Puerto local donde se abre el túnel SSH
 
 // Escapar la contraseña para la URL de conexión
 const escapedPassword = encodeURIComponent(PASSWORD);
