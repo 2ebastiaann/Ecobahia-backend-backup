@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 // ============================================
 exports.registrarUsuario = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, id_rol } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email y contraseña son obligatorios' });
@@ -36,7 +36,8 @@ exports.registrarUsuario = async (req, res) => {
       .from('usuarios')
       .insert({
         email: email,
-        password_hash: hash
+        password_hash: hash,
+        id_rol: id_rol || 3 // Usuario por defecto
       })
       .select()
       .single();
@@ -46,8 +47,9 @@ exports.registrarUsuario = async (req, res) => {
     res.status(201).json({
       ok: true,
       usuario: {
-        id_usuario: nuevoUsuario.id_usuario,  // UUID generado en Supabase
+        id_usuario: nuevoUsuario.id_usuario,
         email: nuevoUsuario.email,
+        id_rol: nuevoUsuario.id_rol,
         fecha_creacion: nuevoUsuario.fecha_creacion
       }
     });
@@ -90,7 +92,7 @@ exports.logearUsuario = async (req, res) => {
 
     // Crear token
     const token = jwt.sign(
-      { id: usuario.id_usuario },
+      { id: usuario.id_usuario, id_rol: usuario.id_rol },
       process.env.JWT_SECRET || '12345fallback',
       { expiresIn: '2h' }
     );
@@ -100,7 +102,8 @@ exports.logearUsuario = async (req, res) => {
       token,
       usuario: {
         id_usuario: usuario.id_usuario,
-        email: usuario.email
+        email: usuario.email,
+        id_rol: usuario.id_rol
       }
     });
 
